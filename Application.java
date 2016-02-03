@@ -25,8 +25,6 @@ public class Application
 		 
 	}
 
-	
-
 	//Print Welcome Message
 	public void printWelcome(){
 		System.out.println("**********");
@@ -40,19 +38,26 @@ public class Application
 	//Print Seating Layout
 	public void printSeating(){
 		System.out.println("Seating Layout:");
-		System.out.print("\n  a b c d");
-		for (int col = 0; col < 4; col++)
+		System.out.print("\n  a b    c d\n");
+		int x = 0;
+		int y = 0;
+		while ( x < 16)
 		{
-			System.out.print("\n");
-			if (col == 2)
+			if (x == 8)
 			{
-				System.out.println("  ------");
+				System.out.println("------   -----");
 			}
-			System.out.print(""+ (col + 1) + " ");
+			System.out.print("" +(y +1)+ " ");
 			
-			for (int row=0; row < 4; row++)
+			for (int col = 0; col < 4; col++)
 			{
-				if (myseats.seats[col][row].avail == true)
+
+				if (col == 2)
+				{
+					System.out.print("|| ");
+				}
+				
+				if (myseats.seats[x].avail == true)
 				{
 					System.out.print("o ");
 				}
@@ -60,11 +65,11 @@ public class Application
 				{
 					System.out.print("x ");
 				}
-				//need to print actual seating here
-				
+				x +=1;
 			}
+			y +=1;
+			System.out.println();
 		}
-		System.out.println();
 	}
 
 	//Show options screen.
@@ -93,7 +98,7 @@ public class Application
 			}
 			else if (userInput.equals("r"))
 			{
-				//TODO need to code something to create reports here
+				createReport();
 			}
 			else if (userInput.equals("s"))
 			{
@@ -105,25 +110,32 @@ public class Application
 	
 	//Process a seat for a passenger
 	public void processPassenger()	{
-		String sorrymsg = "Sorry. No Seats avail. Next Flight in 3 Hours";
-		int[] myavailability = myseats.checkAvailability();
+		int[][] myavailability = myseats.checkAvailability(); //{fcwindow, fcaisle, ewindow, eaisle}
+		int fcavail = myavailability[0][0] + myavailability[0][1];
+		int ecavail = myavailability[1][0] + myavailability[1][1];
+		int ttlavail = fcavail + ecavail;
 		
-		if (myavailability[0] == 0) 
+		String sorrymsg = "Sorry. No Seats avail. Next Flight in 3 Hours";
+		if ((ttlavail) == 0) 
 		{
 			System.out.println(sorrymsg);
 			return;
 		}
+		
 		String msg;
-		if (myavailability[3] == 0 || myavailability[4] == 0)
+		int mysection;
+		if (fcavail == 0 || ecavail == 0)
 		{
-			if (myavailability[3] == 0)
+			if (ecavail == 0)
 			{
-			msg = "Only First Class Seats are available. " +
+				mysection = 1;
+				msg = "Only First Class Seats are available. " +
 					"\nPress 'y' to accept or any other key to cancel";
 			}
 			else {
-			msg = "Only Economy Seats are available. " +
+				msg = "Only Economy Seats are available. " +
 					"\nPress 'y' to accept or any other key to cancel";
+				mysection = 2;
 			}
 			System.out.println(msg);
 			userInput = scanObj.next().toString().trim().toLowerCase();
@@ -132,26 +144,28 @@ public class Application
 				System.out.println(sorrymsg);
 				return;
 			}
-		}
-		
-		
-		//pick class/section
-		msg = "Please choose a section. Press 1 for First Class, 2 for Economy";
-		System.out.println(msg);
-		userInput = scanObj.next().toString().trim().toLowerCase();
-		
-		while (validateInput("class") == false)
-		{
-			System.out.println("Invalid Response." + msg);
-			userInput = scanObj.next().toString().trim().toLowerCase();
 			
 		}
-		char mysection = userInput.charAt(0);
+		else
+		{
+			//pick class/section
+			msg = "Please choose a section. Press 1 for First Class, 2 for Economy";
+			System.out.println(msg);
+			userInput = scanObj.next().toString().trim().toLowerCase();
+			while (validateInput("class") == false)
+			{
+				System.out.println("Invalid Response." + msg);
+				userInput = scanObj.next().toString().trim().toLowerCase();
+			}
+			mysection = Integer.valueOf(userInput);
+		}
 		
-		char mytype = 0; //workaround. char can't be null
+		
+		
+		String mytype; //Window or Aisle seat
 		msg = "Please choose seat type preference." +
 				"\nPress 'a' for aisle, 'w' for window.";
-		if (myavailability[1] > 0 && myavailability[2] > 0)
+		if (myavailability[mysection-1][0] > 0 && myavailability[mysection-1][1] > 0) 
 		{
 			System.out.println(msg);
 			userInput = scanObj.next().toString().trim().toLowerCase();
@@ -160,7 +174,16 @@ public class Application
 				System.out.println("Invalid Response. " + msg);
 				userInput = scanObj.next().toString().trim().toLowerCase();
 			}
-			mytype = userInput.charAt(0);
+			if (userInput.charAt(0) == 'a'){
+				mytype = "Aisle";
+			}
+			else {
+				mytype = "Window";
+			}
+
+		}
+		else {
+			mytype = (myavailability[mysection-1][0] > 0) ? "Window": "Aisle";
 		}
 		
 		System.out.println("Please Enter Your Name.");
@@ -171,16 +194,15 @@ public class Application
 			userInput = scanObj.next().toString().trim();
 		}
 		String myname = userInput;
-		myseats.bookSeat(myname, mysection, mytype);
-		System.out.println("Seat Booked\n");
+		String seatname = myseats.bookSeat(myname, mysection, mytype);
+		System.out.println("Seat Booked:\nId: " + seatname);
+		
 	}
-	
 	
 	
 	//validate User Input under various circumstances
 	public boolean validateInput(String mytype){
 		
-		//JOptionPane.showMessageDialog(null, "Validate Input function has recieved:"  + userInput.length()+".");
 		if (mytype == "class") //handle user input for class selection
 		{
 			
@@ -189,9 +211,7 @@ public class Application
 				return true;
 			}
 			else
-			{
-				return false;
-			}
+			{	return false;}
 		}
 		else if (mytype == "command")
 		{
