@@ -7,8 +7,8 @@ package airplaneseatbooker;
 // 4a 4b 4c 4d
 
 public class Seats {
-	
-	public Seat[] seats; 
+	//NOTE TO SELF: http://www.mkyong.com/java/java-object-sorting-example-comparable-and-comparator/
+	protected Seat[] seats; 
 	//private int[] availabilityArray = new int[4]; //(ttl, window, aisle, first class, economy)
 	//constructor
 	public Seats()
@@ -36,46 +36,12 @@ public class Seats {
 			
 		}
 		
-		/*
-		int x = 0;
-		int y = 0;
-		while ( x < 16)
-		{
-			if (x == 8)
-			{
-				System.out.println("------   -----");
-			}
-			System.out.print("" +(y +1)+ " ");
-			
-			for (int col = 0; col < 4; col++)
-			{
-
-				if (col == 2)
-				{
-					System.out.print("|| ");
-				}
-				
-				if (seats[x].avail == true)
-				{
-					System.out.print("o:" + seats[x].name + seats[x].getSection());
-				}
-				else
-				{
-					System.out.print("x " + seats[x].name + seats[x].getSection());
-				}
-				x +=1;
-			}
-			y +=1;
-			System.out.println("");
-		}
-		*/
 	}
 
 		
 	//choose a free seat based on criteria and reserve it (owner name, section request, aisle/window)
 	public String bookSeat(String name, int section, String type){
 		
-		//TODO: write code
 		int myclass = (section == 1) ? 0 : 8;
 
 		//search for seat in section with type
@@ -94,7 +60,7 @@ public class Seats {
 	}
 	
 	//Check and return availability of sections to make sure requests can be met
-	//(returns array with: 0totalcount, 1windowcount, 2aislecount, 3firstclasscount, 4economycount)
+	//Example of 2D array
 	public int[][] checkAvailability()
 	{
 
@@ -128,6 +94,17 @@ public class Seats {
 		return list;
 	}
 	
+	//checks if seats are full
+	public int getBookedCount(){
+		int mycheckA[][] = checkAvailability();
+		int total = 0;
+		for (int col = 0; col < 2; col++){
+			for (int row = 0; row < 2; row++){
+				total += mycheckA[col][row];
+			}
+		}
+		return (16-total);
+	}
 	//private method to get seatID
 	private String getSeat(int num){
 		int mynumber = (num / 4) + 1;
