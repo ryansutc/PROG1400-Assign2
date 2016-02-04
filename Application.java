@@ -1,17 +1,16 @@
 package airplaneseatbooker;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.Scanner;
-
-import javax.swing.JOptionPane;
 
 public class Application 
 {
-	
-	public Seats myseats; 
-	
+	private Seats myseats; 
 	private Scanner scanObj = new Scanner(System.in);
-	private String userInput; //anytime user types something
-	
+	private String userInput; //any time user types something
 	
 	//constructor
 	public void Start(){
@@ -72,12 +71,11 @@ public class Application
 		}
 	}
 
-	//Show options screen.
+	//Show options screen. this is the apps main controlling loop.
 	private void recieveCommands() {
-	
 		while (!userInput.equals("q"))
 		{	
-			String msg = "Please choose from following options" +
+			String msg = "\nPlease choose from following options" +
 					"\n-   's' to show seating" +
 					"\n-   'r' to print the report" +
 					"\n-   'p' to process another passenger" +
@@ -103,6 +101,10 @@ public class Application
 			else if (userInput.equals("s"))
 			{
 				printSeating();
+			}
+			else if (userInput.equals("q"))
+			{
+				return;
 			}
 		}
 	}
@@ -199,6 +201,39 @@ public class Application
 		
 	}
 	
+	//Output a Report of the passengers and seats
+	public void createReport(){
+	//NOTE: values are copied to separate Seats list to deal with sorting of null
+	//values. This is a workaround because the Comparator class does not handle them by default.
+		
+		Seat myOccupiedSeats[] = new Seat[myseats.getBookedCount()];
+		int x = 0;
+		for (int i = 0; i < 16; i++){
+			if (myseats.seats[i].avail == false){
+				myOccupiedSeats[x] = myseats.seats[i];
+				x +=1;
+			}
+		}
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	    //get current date time with Date()
+		Date date = new Date();
+	   	
+		Arrays.sort(myOccupiedSeats, Seat.SeatNameComparator);
+		System.out.println("-----------------------------");
+		System.out.println("Flight Passenger List");
+		System.out.println(dateFormat.format(date));
+		System.out.println("-----------------------------");
+		for (int i = 0; i < myOccupiedSeats.length; i++)
+		{
+			System.out.println(myOccupiedSeats[i].getSection() + ")\nPassenger: " + 
+						"Seat: " + myOccupiedSeats[i].name + " (" +
+						myOccupiedSeats[i].getOccupant());
+			
+			System.out.println("-----------------------------");
+		}
+		System.out.println("Total of " +myseats.getBookedCount() + " Seats Booked.");
+		System.out.println("Note*: (1) = First Class, (2) = Economy");
+	}
 	
 	//validate User Input under various circumstances
 	public boolean validateInput(String mytype){
@@ -215,7 +250,8 @@ public class Application
 		}
 		else if (mytype == "command")
 		{
-			if (userInput.equals("s") || userInput.equals("r") || userInput.equals("p"))
+			if (userInput.equals("s") || userInput.equals("r") ||
+					userInput.equals("p") || userInput.equals("q"))
 			{
 				return true;
 			}
@@ -248,6 +284,9 @@ public class Application
 		
 		return false;
 	}
+
+		
 }
+
 	
 
