@@ -8,31 +8,33 @@ package airplaneseatbooker;
 
 public class Seats {
 	//NOTE TO SELF: http://www.mkyong.com/java/java-object-sorting-example-comparable-and-comparator/
-	protected Seat[] seats; 
+	protected Seat[][] seats; 
 	//private int[] availabilityArray = new int[4]; //(ttl, window, aisle, first class, economy)
 	//constructor
 	public Seats()
 	{
 
-		seats = new Seat[16];
+		seats = new Seat[4][4];
 		
-		for (int i=0; i < 16; i++)
+		for (int row=0; row < 4; row++)
 		{
-			
-			String myseat = "" + getSeat(i);
-			//1 = FirstClass, 2 = Economy
-			int mysection = ((i / 8) > 0) ? 2: 1;
-			String mytype;
-			if (myseat.charAt(1) == 'a' || myseat.charAt(1) == 'd')
+			for (int col=0; col < 4; col++)
 			{
-				mytype = "Window";
+				String myseat = "" + (row + 1) + getLetter(col);
+				//1 = FirstClass, 2 = Economy
+				int mysection = ((row + 1) > 2) ? 2: 1;
+				String mytype;
+				if (myseat.charAt(1) == 'a' || myseat.charAt(1) == 'd')
+				{
+					mytype = "Window";
+				}
+				else 
+				{
+					mytype = "Aisle";
+				}
+	
+				seats[row][col] = new Seat(myseat, mysection, mytype);
 			}
-			else 
-			{
-				mytype = "Aisle";
-			}
-
-			seats[i] = new Seat(myseat, mysection, mytype);
 			
 		}
 		
@@ -42,17 +44,20 @@ public class Seats {
 	//choose a free seat based on criteria and reserve it (owner name, section request, aisle/window)
 	public String bookSeat(String name, int section, String type){
 		
-		int myclass = (section == 1) ? 0 : 8;
+		int myclass = (section == 1) ? 0 : 2; 
 
 		//search for seat in section with type
-		for (int i = myclass; i < 16; i++)
+		for (int row = myclass; row < 4; row++)
 		{
-			if (seats[i].avail == true)
+			for (int col = 0; col < 4; col++)
 			{
-				if (seats[i].getType() == type)
+				if (seats[row][col].avail == true)
 				{
-					seats[i].setOccupant(name);
-					return seats[i].name;
+					if (seats[row][col].getType() == type)
+					{
+						seats[row][col].setOccupant(name);
+						return seats[row][col].name;
+					}
 				}
 			}
 		}
@@ -60,7 +65,7 @@ public class Seats {
 	}
 	
 	//Check and return availability of sections to make sure requests can be met
-	//Example of 2D array
+	//Another Example of 2D array
 	public int[][] checkAvailability()
 	{
 
@@ -70,24 +75,27 @@ public class Seats {
 		int eaisle =0; //economy class aisle seat
 			
 		//for seat in list check if available. if/then to each category and total
-		for (int i = 0; i < 16; i++)
+		for (int row = 0; row < 4; row++)
 		{
-			if (seats[i].avail){				
-				if (seats[i].getType() == "Window") 
-				{
-					if (seats[i].getSection() == 1)
+			for (int col = 0; col < 4; col++)
+			{
+				if (seats[row][col].avail){				
+					if (seats[row][col].getType() == "Window") 
 					{
-						fcwindow += 1;
+						if (seats[row][col].getSection() == 1)
+						{
+							fcwindow += 1;
+						}
+						else { ewindow += 1;}
 					}
-					else { ewindow += 1;}
+					else { 
+						if (seats[row][col].getSection() == 1)
+						{
+							fcaisle += 1;
+						}
+						else { eaisle += 1;}
+					}					
 				}
-				else { 
-					if (seats[i].getSection() == 1)
-					{
-						fcaisle += 1;
-					}
-					else { eaisle += 1;}
-				}					
 			}
 		}
 		int list[][] = {{fcwindow, fcaisle},{ewindow, eaisle}};
@@ -105,14 +113,8 @@ public class Seats {
 		}
 		return (16-total);
 	}
-	//private method to get seatID
-	private String getSeat(int num){
-		int mynumber = (num / 4) + 1;
-		char myletter = getLetter(num);
-		return "" + mynumber + myletter;
-	}
-	//private method to assign letter to seatID
-	
+
+	//private method to assign letter to seatID	
 	private char getLetter(int num)
 	{
 		int cnum = num % 4;
