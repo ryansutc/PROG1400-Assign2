@@ -21,7 +21,6 @@ public class Application
 		
 		recieveCommands();
 		
-		 
 	}
 
 	//Print Welcome Message
@@ -38,25 +37,23 @@ public class Application
 	public void printSeating(){
 		System.out.println("Seating Layout:");
 		System.out.print("\n  a b    c d\n");
-		int x = 0;
-		int y = 0;
-		while ( x < 16)
+
+		for (int col = 0; col < 4; col++)
 		{
-			if (x == 8)
+			if (col == 2)
 			{
 				System.out.println("------   -----");
 			}
-			System.out.print("" +(y +1)+ " ");
+			System.out.print((col+1)+ " ");
 			
-			for (int col = 0; col < 4; col++)
+			for (int row = 0; row < 4; row++)
 			{
-
-				if (col == 2)
+				if (row == 2)
 				{
 					System.out.print("|| ");
 				}
 				
-				if (myseats.seats[x].avail == true)
+				if (myseats.seats[col][row].avail == true)
 				{
 					System.out.print("o ");
 				}
@@ -64,9 +61,7 @@ public class Application
 				{
 					System.out.print("x ");
 				}
-				x +=1;
 			}
-			y +=1;
 			System.out.println();
 		}
 	}
@@ -87,7 +82,7 @@ public class Application
 			while (validateInput("command") == false)
 			{
 				System.out.println("Invalid Response. " + msg);
-				userInput = scanObj.next().toString().trim().toLowerCase();
+				userInput = scanObj.nextLine().toString().trim().toLowerCase();
 			}
 			
 			if (userInput.equals("p"))
@@ -187,13 +182,15 @@ public class Application
 		else {
 			mytype = (myavailability[mysection-1][0] > 0) ? "Window": "Aisle";
 		}
-		
-		System.out.println("Please Enter Your Name.");
-		userInput = scanObj.next().toString().trim();
+		msg = "Please Enter Your Name.";
+		System.out.println(msg);
+		scanObj.nextLine();
+		userInput = scanObj.nextLine().toString().trim();
+		System.out.println(userInput);
 		while (validateInput("name") == false)
 		{
-			System.out.println("Invalid/Blank Response." + msg);
-			userInput = scanObj.next().toString().trim();
+			System.out.println("Invalid/Blank Response. " + msg);
+			userInput = scanObj.nextLine().toString().trim();
 		}
 		String myname = userInput;
 		String seatname = myseats.bookSeat(myname, mysection, mytype);
@@ -203,17 +200,23 @@ public class Application
 	
 	//Output a Report of the passengers and seats
 	public void createReport(){
-	//NOTE: values are copied to separate Seats list to deal with sorting of null
-	//values. This is a workaround because the Comparator class does not handle them by default.
-		
+	/*
+	 * NOTE: values are copied to separate Seats list to deal with sorting of null
+	values. This is a workaround because the Comparator class does not handle them by default.
+	this also converts from 2D array to 1D.
+	*/	
 		Seat myOccupiedSeats[] = new Seat[myseats.getBookedCount()];
 		int x = 0;
-		for (int i = 0; i < 16; i++){
-			if (myseats.seats[i].avail == false){
-				myOccupiedSeats[x] = myseats.seats[i];
-				x +=1;
+		for (int col = 0; col < 4; col++){
+			for (int row = 0; row < 4; row++)
+			{
+				if (myseats.seats[col][row].avail == false){
+					myOccupiedSeats[x] = myseats.seats[col][row];
+					x +=1;
+				}
 			}
 		}
+		
 		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	    //get current date time with Date()
 		Date date = new Date();
@@ -225,9 +228,11 @@ public class Application
 		System.out.println("-----------------------------");
 		for (int i = 0; i < myOccupiedSeats.length; i++)
 		{
-			System.out.println(myOccupiedSeats[i].getSection() + ")\nPassenger: " + 
+			System.out.println("Passenger: " +
+						myOccupiedSeats[i].getOccupant() + "\n" +
 						"Seat: " + myOccupiedSeats[i].name + " (" +
-						myOccupiedSeats[i].getOccupant());
+						myOccupiedSeats[i].getSection() + ")\nTime Booked: " +
+						dateFormat.format(myOccupiedSeats[i].bookTime));
 			
 			System.out.println("-----------------------------");
 		}
@@ -262,7 +267,7 @@ public class Application
 		}
 		else if (mytype == "name")
 		{
-			if (userInput.length() > 0)
+			if (userInput.length() > 0 && userInput.length() < 50)
 			{
 				return true;
 			}
